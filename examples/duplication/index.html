@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+        <title>Code Duplication</title>
+
+        <style>
+
+            legend {
+                font-size: 1.5rem;
+                font-family: Arial, Helvetica, sans-serif;
+                color:#f7f3f2;
+                background-color: #2e2c2c;
+                padding: 0.2rem 0.4rem;
+            }
+
+            ul {
+                list-style-type: none;
+                padding-left: 0;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            li:not(:first-child) {
+                padding-top: 0.2rem;
+            }
+
+            input:checked,
+            input:checked + label {
+                background-color: #91d9a5;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Code Duplication</h1>
+
+        <p>
+            Below is a simple demo app of the <a href="https://wiki.fluidproject.org/display/fluid/Laser+Eye+Checklist">Laser Eye Checklist</a>.
+            Checked items move to the bottom, unchecked items move back to the top.
+        </p>
+
+        <p>
+            The purpose of this example is to explore some forms of duplication that may occur during development. One should examine the source
+            code and investigate where duplication occurs and ways to improve it.
+        </p>
+
+        <form>
+            <fieldset>
+                <legend>Laser Eye Checklist</legend>
+                <ul id="laserEyeChecklist">
+                    <li class="laserItem">
+                        <input id="duplication" class="checkbox" type="checkbox" name="duplication">
+                        <label for="duplication">
+                            The code should not contain any duplicated sections (cut 'n' paste), either with respect to the whole codebase and certainly not amongst any piece of new work
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="tests" class="checkbox" type="checkbox" name="tests">
+                        <label for="tests">
+                            There are passing tests for new functionality
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="i18n" class="checkbox" type="checkbox" name="i18n">
+                        <label for="i18n">
+                            The code is internationalized - at a minimum all human readable text are in strings in the options block
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="comments" class="checkbox" type="checkbox" name="comments">
+                        <label for="comments">
+                            The public API is commented
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="api" class="checkbox" type="checkbox" name="api">
+                        <label for="api">
+                            Core logic is available and testable through an API (hint: your event handlers often contain core logic)
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="aria" class="checkbox" type="checkbox" name="aria">
+                        <label for="aria">
+                            ARIA roles are used where appropriate
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="operable" class="checkbox" type="checkbox" name="operable">
+                        <label for="operable">
+                            All functionality can be navigated to and controlled via the keyboard
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="responsive" class="checkbox" type="checkbox" name="responsive">
+                        <label for="responsive">
+                            Is responsive to different screen sizes
+                        </label>
+
+                    </li>
+                    <li class="laserItem">
+                        <input id="codeUnits" class="checkbox" type="checkbox" name="codeUnits">
+                        <label for="codeUnits">
+                            Code is broken up into small, well named things, which are all independently testable in isolation from each other
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="errorMessages" class="checkbox" type="checkbox" name="errorMessages">
+                        <label for="errorMessages">
+                            Errors are reported to the user clearly
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="linting" class="checkbox" type="checkbox" name="linting">
+                        <label for="linting">
+                            All files pass linting rules
+                        </label>
+                    </li>
+                    <li class="laserItem">
+                        <input id="validation" class="checkbox" type="checkbox" name="validation">
+                        <label for="validation">
+                            All HTML files pass the W3C validator
+                        </label>
+                    </li>
+                </ul>
+                <p role="status"><span id="count"></span> Completed</p>
+            </fieldset>
+            <script>
+
+                /**
+                 * A simple tool for interpolating values into a String template. Only the first occurrence of a token
+                 * will be replaced.
+                 *
+                 * @param  {String} template - a template string where tokens take the form of "%tokenName".
+                 * @param  {Object} values   - tokens and the value for them to be replaced by. e.g. {tokenName: "value"}
+                 *
+                 * @return {String}          - the constructed string with the tokens replaced by their associated values.
+                 */
+                let stringTemplate = (template, values) => {
+                    for (let [key, value] of Object.entries(values)) {
+                        template = template.replace("%" + key, value);
+                    }
+                    console.log(template);
+                    return template;
+                };
+
+                // set initial count
+                document.getElementById("count").textContent = stringTemplate("(%checked / %total)", {
+                    checked: document.querySelectorAll(".checkbox:checked").length,
+                    total: document.querySelectorAll(".checkbox").length
+                });
+
+                // add listeners
+                document.querySelectorAll(".checkbox").forEach((checkbox) => {
+                    // moved checked items to the bottom
+                    checkbox.addEventListener("change", (event) => {
+                        if (event.target.checked) {
+                            let item = event.target.closest(".laserItem");
+
+                            item.parentElement.append(item);
+                        }
+                    });
+
+                    // move unchecked items to the top
+                    checkbox.addEventListener("change", (event) => {
+                        if (!event.target.checked) {
+                            let item = event.target.closest(".laserItem");
+
+                            item.parentElement.prepend(item);
+                        }
+                    });
+
+                    // update count
+                    checkbox.addEventListener("change", (event) => {
+                        document.getElementById("count").textContent = stringTemplate("(%checked / %total)", {
+                            checked: document.querySelectorAll(".checkbox:checked").length,
+                            total: document.querySelectorAll(".checkbox").length
+                        });
+                    });
+                });
+            </script>
+        </form>
+    </body>
+</html>
